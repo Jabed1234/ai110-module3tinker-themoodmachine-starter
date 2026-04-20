@@ -12,5 +12,6 @@ Reflection on profile comparisons
   - This profile exposed a ranking bias: genre match and energy closeness still pushed pop tracks to the top despite the moody mood tag. It suggests mood is a weaker, softer constraint relative to genre and numeric fit.
 
 Overall takeaways:
+
 - The recommender behaves predictably given the scoring recipe: fixed categorical bonuses have a large effect, and numeric closeness fine-tunes ordering.
 - In small catalogs, genre priors dominate and can hide credible cross-genre matches; balancing weights and adding diversity constraints would improve perceived quality.

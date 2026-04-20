@@ -13,19 +13,54 @@ from src.recommender import load_songs, recommend_songs
 
 
 def main() -> None:
-    songs = load_songs("data/songs.csv") 
+    songs = load_songs("data/songs.csv")
 
-    # Starter example profile
-    user_prefs = {"genre": "pop", "mood": "happy", "energy": 0.8}
+    # Define several diverse user profiles for evaluation
+    profiles = {
+        "High-Energy Pop": {
+            "genre": "pop",
+            "mood": "happy",
+            "energy": 0.9,
+        },
+        "Chill Lofi": {
+            "genre": "lofi",
+            "mood": "chill",
+            "energy": 0.35,
+        },
+        "Deep Intense Rock": {
+            "genre": "rock",
+            "mood": "intense",
+            "energy": 0.92,
+        },
+        # An adversarial/conflicting profile to test behavior
+        "Conflicting (HighEnergy + Sad)": {
+            "genre": "pop",
+            "mood": "moody",
+            "energy": 0.95,
+        },
+    }
 
-    recommendations = recommend_songs(user_prefs, songs, k=5)
+    # Baseline run for each profile
+    for name, prefs in profiles.items():
+        print(f"\n=== Profile: {name} ===")
+        recs = recommend_songs(prefs, songs, k=5)
+        for idx, (song, score, explanation) in enumerate(recs, start=1):
+            print(f"{idx}. {song.get('title','Unknown Title')}  —  Score: {score:.2f}")
+            reasons = [r.strip() for r in explanation.split(';') if r.strip()]
+            if reasons:
+                print("   Reasons:")
+                for r in reasons:
+                    print(f"     - {r}")
+            else:
+                print("   Reasons: (none)")
+        print()
 
-    print("\nTop recommendations:\n")
-    for idx, rec in enumerate(recommendations, start=1):
-        # (song_dict, score, explanation_str)
-        song, score, explanation = rec
+    # Experimental run: Weight shift (double numeric importance, half genre)
+    exp_prefs = {"genre": "pop", "mood": "happy", "energy": 0.8, "weights": {"genre": 1.0, "mood": 1.0, "numeric_scale": 4.0}}
+    print("\n=== Experimental Profile: Higher numeric weight (energy) ===")
+    exp_recs = recommend_songs(exp_prefs, songs, k=5)
+    for idx, (song, score, explanation) in enumerate(exp_recs, start=1):
         print(f"{idx}. {song.get('title','Unknown Title')}  —  Score: {score:.2f}")
-        # split reasons and print each on its own indented line for readability
         reasons = [r.strip() for r in explanation.split(';') if r.strip()]
         if reasons:
             print("   Reasons:")
@@ -33,7 +68,7 @@ def main() -> None:
                 print(f"     - {r}")
         else:
             print("   Reasons: (none)")
-        print()
+    print()
 
 
 if __name__ == "__main__":

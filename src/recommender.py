@@ -126,14 +126,20 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     """
     reasons: List[str] = []
 
-    # Genre and mood
-    genre_pts = 2.0 if user_prefs.get('genre') and song.get('genre') == user_prefs.get('genre') else 0.0
-    if genre_pts > 0:
-        reasons.append(f"genre match (+{genre_pts:.1f})")
+    # Read optional weights from user_prefs; fall back to defaults
+    weights = user_prefs.get('weights', {}) if isinstance(user_prefs.get('weights', {}), dict) else {}
+    genre_w = float(weights.get('genre', 2.0))
+    mood_w = float(weights.get('mood', 1.0))
+    numeric_scale = float(weights.get('numeric_scale', 2.0))
 
-    mood_pts = 1.0 if user_prefs.get('mood') and song.get('mood') == user_prefs.get('mood') else 0.0
+    # Genre and mood
+    genre_pts = genre_w if user_prefs.get('genre') and song.get('genre') == user_prefs.get('genre') else 0.0
+    if genre_pts > 0:
+        reasons.append(f"genre match (+{genre_pts:.2f})")
+
+    mood_pts = mood_w if user_prefs.get('mood') and song.get('mood') == user_prefs.get('mood') else 0.0
     if mood_pts > 0:
-        reasons.append(f"mood match (+{mood_pts:.1f})")
+        reasons.append(f"mood match (+{mood_pts:.2f})")
 
     # Numeric similarity on energy (expect user_prefs to have 'energy' or 'target_energy')
     target_energy = float(user_prefs.get('energy') or user_prefs.get('target_energy') or 0.0)
@@ -142,9 +148,9 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     except Exception:
         song_energy = 0.0
 
-    sigma = 0.15
+    sigma = float(weights.get('sigma_energy', 0.15))
     score_energy = math.exp(- ((song_energy - target_energy) ** 2) / (2 * sigma * sigma))
-    numeric_pts = 2.0 * score_energy
+    numeric_pts = numeric_scale * score_energy
     reasons.append(f"energy closeness (+{numeric_pts:.2f})")
 
     total = genre_pts + mood_pts + numeric_pts
