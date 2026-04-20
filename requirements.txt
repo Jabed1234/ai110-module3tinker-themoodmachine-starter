@@ -1,3 +1,9 @@
+<<<<<<< HEAD
 pandas
 pytest
 streamlit
+=======
+scikit-learn
+matplotlib
+ipykernel
+>>>>>>> 88ebaf40bb0eb0ca51820c7547b50b3d1ba7460c
